@@ -1,3 +1,16 @@
 <resources>
-    <string name="app_name">AndroidApp3</string>
+    <string name="app_name">Guardian</string>
+    <string name="title_where_am_i">Where am I</string>
+    <string name="label_latitude">Latitude</string>
+    <string name="label_longitude">Longitude</string>
+    <string name="label_address">Address</string>
+    <string name="label_accuracy">Accuracy</string>
+    <string name="placeholder_value">--</string>
+    <string name="btn_get_location">Get My Location</string>
+    <string name="error_location_denied">Location permission is required for this feature.</string>
+    <string name="error_location_null">Could not retrieve location.</string>
+    <string name="error_location_failure">Failed to get location: %s</string>
+    <string name="error_geocoder_not_present">Geocoder is not available on this device.</string>
+    <string name="error_geocoding_failed">Address lookup failed.</string>
+    <string name="accuracy_format">%s m</string>
 </resources>
