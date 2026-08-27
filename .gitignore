@@ -13,3 +13,7 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Coding-agent artifacts
+.gemini/
+*.artifact.md
