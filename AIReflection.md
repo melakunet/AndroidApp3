@@ -1,4 +1,4 @@
-**How did I use AI in this assignment?**
+**1. How did I use AI in this assignment?**
 
 **A. Overall**
 
@@ -24,3 +24,29 @@ AI helped me here to create steps, guide me on what files to make, and create th
 * **`ValueAnimator` with the 359°→0° wrap (`CompassView.kt`):** Learned how to calculate the shortest path rotation so the compass needle does not spin all the way around when crossing north.
 * **`toRawBits` / `fromBits` to store a `Double` in `SharedPreferences` (`HomeStore.kt`):** `SharedPreferences` does not have a `putDouble` method, so I learned to store latitude and longitude coordinates as bits.
 * **Continuous location updates with `LocationCallback` (`SafeZoneActivity.kt`):** Used `LocationRequest.Builder` and `requestLocationUpdates` to track the user's distance from the safe zone in real time.
+
+2. How did you understand, verify, and adapt the code?
+
+a. How I verified the AI code was correct:
+
+Tested every step on my physical Samsung phone, not just the emulator, to confirm the address matched my real street.
+
+Saved my home address, force-closed the app, and reopened it to verify SharedPreferences actually kept the data.
+
+Tested the Safe Zone by setting a radius, tapping "Start Tracking," and walking around to watch the live distance and the INSIDE/OUTSIDE status change.
+
+b. Changes I made and why:
+
+Moved the sensor logic into HeadingSensor.kt and the distance math into GeoUtils.kt so the home screen and compass screen share the same code instead of repeating it.
+
+Replaced the class example's null with CancellationTokenSource for cleaner location requests.
+
+3. What did you learn or get better at?
+
+a. Concept I leveled up on:
+
+I understood how the accelerometer and magnetometer work together to calculate the device heading, and why CompassView must rotate the needle and dial together inside onDraw so North stays accurate.
+
+b. What went well:
+
+Using small, focused prompts with clear rules, testing on a real phone, and making regular git commits throughout the process
