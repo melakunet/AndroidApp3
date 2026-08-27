@@ -13,4 +13,11 @@
     <string name="error_geocoder_not_present">Geocoder is not available on this device.</string>
     <string name="error_geocoding_failed">Address lookup failed.</string>
     <string name="accuracy_format">%s m</string>
+    <string name="btn_set_as_home">Set as Home</string>
+    <string name="status_no_home">No home set</string>
+    <string name="status_home_format">Home: %s</string>
+    <string name="status_distance_format">Distance from home: %s</string>
+    <string name="toast_home_saved">Home location saved</string>
+    <string name="distance_meters">%d m</string>
+    <string name="distance_km">%.1f km</string>
 </resources>

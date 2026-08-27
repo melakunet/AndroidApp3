@@ -25,7 +25,7 @@ import java.util.Locale
 
 /**
  * Main activity for the Guardian app.
- * Handles location fetching and reverse geocoding to display the current address.
+ * Handles location fetching, reverse geocoding, and home location persistence.
  */
 class MainActivity : AppCompatActivity() {
 
@@ -34,17 +34,20 @@ class MainActivity : AppCompatActivity() {
     private lateinit var longitudeText: TextView
     private lateinit var accuracyText: TextView
     private lateinit var addressText: TextView
+    private lateinit var homeStatusText: TextView
     private lateinit var locationButton: Button
+    private lateinit var setHomeButton: Button
+
+    // Holds the last successfully retrieved location
+    private var lastLocation: Location? = null
 
     // Permission request launcher for fine and coarse location
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
-            // Permission granted, fetch location
             fetchLocation()
         } else {
-            // Permission denied, show toast as per requirement
             Toast.makeText(this, getString(R.string.error_location_denied), Toast.LENGTH_SHORT).show()
         }
     }
@@ -54,7 +57,7 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Setup toolbar as support action bar
+        // Setup toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
@@ -63,17 +66,29 @@ class MainActivity : AppCompatActivity() {
         longitudeText = findViewById(R.id.longitudeText)
         accuracyText = findViewById(R.id.accuracyText)
         addressText = findViewById(R.id.addressText)
+        homeStatusText = findViewById(R.id.homeStatusText)
         locationButton = findViewById(R.id.locationButton)
+        setHomeButton = findViewById(R.id.setHomeButton)
 
-        // Initialize FusedLocationProviderClient
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // Set click listener for the location button
         locationButton.setOnClickListener {
             checkPermissionsAndFetchLocation()
         }
 
-        // Keep the existing edge-to-edge insets handling
+        // Action for setting current location as home
+        setHomeButton.setOnClickListener {
+            lastLocation?.let { loc ->
+                HomeStore.saveHome(this, loc.latitude, loc.longitude, addressText.text.toString())
+                Toast.makeText(this, getString(R.string.toast_home_saved), Toast.LENGTH_SHORT).show()
+                refreshHomeStatus()
+            }
+        }
+
+        // Initial refresh of home status UI
+        refreshHomeStatus()
+
+        // Apply window insets for edge-to-edge support
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -81,39 +96,29 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Checks if location permissions are granted. If not, requests them.
-     */
     private fun checkPermissionsAndFetchLocation() {
-        when {
-            ActivityCompat.checkSelfPermission(
+        if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                fetchLocation()
-            }
-            else -> {
-                requestPermissionLauncher.launch(
-                    arrayOf(
-                        Manifest.permission.ACCESS_FINE_LOCATION,
-                        Manifest.permission.ACCESS_COARSE_LOCATION
-                    )
+            ) == PackageManager.PERMISSION_GRANTED
+        ) {
+            fetchLocation()
+        } else {
+            requestPermissionLauncher.launch(
+                arrayOf(
+                    Manifest.permission.ACCESS_FINE_LOCATION,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
                 )
-            }
+            )
         }
     }
 
-    /**
-     * Fetches the current location using FusedLocationProviderClient.
-     */
     private fun fetchLocation() {
         if (ActivityCompat.checkSelfPermission(
                 this,
                 Manifest.permission.ACCESS_FINE_LOCATION
             ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            return
-        }
+        ) return
 
         val cts = CancellationTokenSource()
         fusedLocationClient.getCurrentLocation(
@@ -121,8 +126,11 @@ class MainActivity : AppCompatActivity() {
             cts.token
         ).addOnSuccessListener { location: Location? ->
             if (location != null) {
+                lastLocation = location
+                setHomeButton.isEnabled = true
                 updateLocationUI(location)
                 reverseGeocode(location)
+                refreshHomeStatus()
             } else {
                 addressText.text = getString(R.string.error_location_null)
             }
@@ -131,9 +139,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    /**
-     * Updates the UI text views with the fetched location data.
-     */
     private fun updateLocationUI(location: Location) {
         latitudeText.text = String.format(Locale.US, "%.6f", location.latitude)
         longitudeText.text = String.format(Locale.US, "%.6f", location.longitude)
@@ -141,9 +146,36 @@ class MainActivity : AppCompatActivity() {
     }
 
     /**
-     * Performs reverse geocoding to find the address from coordinates.
-     * Uses the asynchronous API on API 33+ and a background thread on older versions.
+     * Refreshes the home status UI, including distance calculation if home and current location exist.
      */
+    private fun refreshHomeStatus() {
+        val home = HomeStore.loadHome(this)
+        if (home == null) {
+            homeStatusText.text = getString(R.string.status_no_home)
+            return
+        }
+
+        val status = StringBuilder()
+        status.append(getString(R.string.status_home_format, home.address))
+
+        lastLocation?.let { currentLoc ->
+            val homeLoc = Location("").apply {
+                latitude = home.latitude
+                longitude = home.longitude
+            }
+            val distance = currentLoc.distanceTo(homeLoc)
+            val distanceStr = if (distance > 1000) {
+                getString(R.string.distance_km, distance / 1000f)
+            } else {
+                getString(R.string.distance_meters, distance.toInt())
+            }
+            status.append("\n")
+            status.append(getString(R.string.status_distance_format, distanceStr))
+        }
+
+        homeStatusText.text = status.toString()
+    }
+
     private fun reverseGeocode(location: Location) {
         val geocoder = Geocoder(this, Locale.getDefault())
         if (!Geocoder.isPresent()) {
@@ -152,58 +184,42 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // Asynchronous API for API 33+
             geocoder.getFromLocation(
                 location.latitude,
                 location.longitude,
                 1,
                 object : Geocoder.GeocodeListener {
                     override fun onGeocode(addresses: MutableList<Address>) {
-                        runOnUiThread {
-                            displayAddress(addresses)
-                        }
+                        runOnUiThread { displayAddress(addresses) }
                     }
-
                     override fun onError(errorMessage: String?) {
-                        runOnUiThread {
-                            addressText.text = getString(R.string.error_geocoding_failed)
-                        }
+                        runOnUiThread { addressText.text = getString(R.string.error_geocoding_failed) }
                     }
                 }
             )
         } else {
-            // Background thread for older versions
             Thread {
                 try {
                     @Suppress("DEPRECATION")
                     val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
                     runOnUiThread {
-                        if (addresses != null) {
-                            displayAddress(addresses)
-                        } else {
-                            addressText.text = getString(R.string.error_geocoding_failed)
-                        }
+                        if (addresses != null) displayAddress(addresses)
+                        else addressText.text = getString(R.string.error_geocoding_failed)
                     }
                 } catch (e: Exception) {
-                    runOnUiThread {
-                        addressText.text = getString(R.string.error_geocoding_failed)
-                    }
+                    runOnUiThread { addressText.text = getString(R.string.error_geocoding_failed) }
                 }
             }.start()
         }
     }
 
-    /**
-     * Formats and displays the first address from the geocoder results.
-     */
     private fun displayAddress(addresses: List<Address>) {
         if (addresses.isNotEmpty()) {
             val address = addresses[0]
-            val addressLines = mutableListOf<String>()
-            for (i in 0..address.maxAddressLineIndex) {
-                addressLines.add(address.getAddressLine(i))
-            }
+            val addressLines = (0..address.maxAddressLineIndex).map { address.getAddressLine(it) }
             addressText.text = addressLines.joinToString("\n")
+            // Refresh home status in case address was updated for a newly saved home
+            refreshHomeStatus()
         } else {
             addressText.text = getString(R.string.error_geocoding_failed)
         }
