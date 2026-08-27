@@ -6,7 +6,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="?android:attr/colorBackground"
-    tools:context=".MainActivity">
+    tools:context=".SafeZoneActivity">
 
     <androidx.appcompat.widget.Toolbar
         android:id="@+id/toolbar"
@@ -15,7 +15,7 @@
         android:background="?android:attr/colorBackground"
         android:elevation="0dp"
         app:layout_constraintTop_toTopOf="parent"
-        app:title="@string/app_name"
+        app:title="@string/title_safe_zone"
         app:titleTextColor="?attr/colorOnSurface" />
 
     <ScrollView
@@ -29,9 +29,9 @@
             android:layout_height="wrap_content"
             android:paddingBottom="32dp">
 
-            <!-- Mini Compass Card -->
+            <!-- Status Card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/compassCard"
+                android:id="@+id/statusCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
@@ -42,56 +42,65 @@
                 app:strokeWidth="1dp"
                 app:layout_constraintTop_toTopOf="parent">
 
-                <androidx.constraintlayout.widget.ConstraintLayout
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:padding="16dp">
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:padding="20dp">
 
                     <TextView
-                        android:id="@+id/miniCompassLabel"
+                        android:id="@+id/statusText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_mini_compass"
-                        style="@style/TextAppearance.Guardian.Label"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        android:text="@string/status_no_home"
+                        style="@style/TextAppearance.Guardian.Title"
+                        android:textColor="?attr/colorOnSurface" />
 
-                    <com.melakunet.androidapp3.CompassView
-                        android:id="@+id/miniCompass"
+                    <TextView
+                        android:id="@+id/distanceText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        style="@style/TextAppearance.Guardian.Value"
+                        tools:text="120 m from home" />
+
+                    <View
                         android:layout_width="match_parent"
-                        android:layout_height="220dp"
-                        android:layout_marginTop="8dp"
-                        app:layout_constraintTop_toBottomOf="@id/miniCompassLabel" />
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="16dp"
+                        android:background="?attr/colorOutline" />
 
                     <TextView
-                        android:id="@+id/miniCompassHint"
+                        android:id="@+id/radiusLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/hint_open_compass"
-                        style="@style/TextAppearance.MaterialComponents.Caption"
-                        android:textColor="?attr/colorSecondary"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toBottomOf="@id/miniCompass" />
+                        android:text="@string/label_radius"
+                        style="@style/TextAppearance.Guardian.Label" />
 
-                </androidx.constraintlayout.widget.ConstraintLayout>
+                    <TextView
+                        android:id="@+id/radiusText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        style="@style/TextAppearance.Guardian.Value"
+                        android:textColor="?attr/colorTertiary"
+                        tools:text="200 m" />
+
+                    <com.google.android.material.slider.Slider
+                        android:id="@+id/radiusSlider"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:valueFrom="50"
+                        android:valueTo="1000"
+                        android:stepSize="50"
+                        android:value="200" />
+                </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <TextView
-                android:id="@+id/titleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                android:text="@string/title_where_am_i"
-                style="@style/TextAppearance.Guardian.Label"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/compassCard" />
-
-            <!-- Location Details Card -->
+            <!-- Readings Card -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/locationCard"
+                android:id="@+id/readingsCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
@@ -100,7 +109,7 @@
                 app:cardCornerRadius="20dp"
                 app:strokeColor="?attr/colorOutline"
                 app:strokeWidth="1dp"
-                app:layout_constraintTop_toBottomOf="@id/titleText">
+                app:layout_constraintTop_toBottomOf="@id/statusCard">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -108,13 +117,11 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Compact rows: Label and Value on one line -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
                         <TextView
-                            android:id="@+id/latitudeLabel"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -139,7 +146,6 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
                         <TextView
-                            android:id="@+id/longitudeLabel"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -164,7 +170,6 @@
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
                         <TextView
-                            android:id="@+id/accuracyLabel"
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
@@ -184,15 +189,38 @@
                         android:layout_marginVertical="8dp"
                         android:background="?attr/colorOutline" />
 
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="@string/label_speed"
+                            style="@style/TextAppearance.Guardian.Label" />
+                        <TextView
+                            android:id="@+id/speedText"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="@string/placeholder_value"
+                            style="@style/TextAppearance.Guardian.Value" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginVertical="8dp"
+                        android:background="?attr/colorOutline" />
+
                     <TextView
-                        android:id="@+id/addressLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/label_address"
+                        android:text="@string/label_last_update"
                         style="@style/TextAppearance.Guardian.Label" />
 
                     <TextView
-                        android:id="@+id/addressText"
+                        android:id="@+id/lastUpdateText"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:text="@string/placeholder_value"
@@ -201,66 +229,17 @@
             </com.google.android.material.card.MaterialCardView>
 
             <Button
-                android:id="@+id/locationButton"
+                android:id="@+id/trackingButton"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="40dp"
                 android:layout_marginTop="24dp"
-                android:text="@string/btn_get_location"
+                android:text="@string/btn_start_tracking"
                 style="@style/Widget.Guardian.Button"
                 android:textColor="?attr/colorOnPrimary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/locationCard" />
-
-            <Button
-                android:id="@+id/setHomeButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="40dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/btn_set_as_home"
-                style="@style/Widget.Guardian.Button.Outlined"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/locationButton" />
-
-            <Button
-                android:id="@+id/openSafeZoneButton"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="40dp"
-                android:layout_marginTop="12dp"
-                android:text="@string/btn_open_safe_zone"
-                style="@style/Widget.Guardian.Button.Outlined"
-                app:strokeColor="?attr/colorPrimary"
-                android:textColor="?attr/colorPrimary"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/setHomeButton" />
-
-            <!-- Home Status Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/homeStatusCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginTop="24dp"
-                app:cardBackgroundColor="?attr/colorSurface"
-                app:cardCornerRadius="20dp"
-                app:strokeColor="?attr/colorOutline"
-                app:strokeWidth="1dp"
-                app:layout_constraintTop_toBottomOf="@id/openSafeZoneButton">
-
-                <TextView
-                    android:id="@+id/homeStatusText"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:padding="20dp"
-                    android:text="@string/status_no_home"
-                    style="@style/TextAppearance.Guardian.Value" />
-            </com.google.android.material.card.MaterialCardView>
+                app:layout_constraintTop_toBottomOf="@id/readingsCard" />
 
         </androidx.constraintlayout.widget.ConstraintLayout>
     </ScrollView>

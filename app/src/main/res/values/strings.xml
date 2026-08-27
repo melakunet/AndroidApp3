@@ -39,4 +39,18 @@
     <string name="dir_nw">Northwest</string>
     <string name="label_mini_compass">Compass</string>
     <string name="hint_open_compass">Tap to open the full compass</string>
+    <string name="menu_safe_zone">Safe Zone</string>
+    <string name="title_safe_zone">Safe Zone</string>
+    <string name="btn_open_safe_zone">Open Safe Zone</string>
+    <string name="status_inside_zone">INSIDE SAFE ZONE</string>
+    <string name="status_outside_zone">OUTSIDE SAFE ZONE</string>
+    <string name="label_radius">Radius</string>
+    <string name="radius_format">%d m</string>
+    <string name="label_speed">Speed</string>
+    <string name="speed_format">%.1f km/h</string>
+    <string name="label_last_update">Last Update</string>
+    <string name="btn_start_tracking">Start Tracking</string>
+    <string name="btn_stop_tracking">Stop Tracking</string>
+    <string name="notif_left_safe_zone">Left the safe zone</string>
+    <string name="notif_channel_name">Guardian Alerts</string>
 </resources>

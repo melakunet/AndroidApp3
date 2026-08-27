@@ -17,6 +17,8 @@ object HomeStore {
     private const val KEY_LATITUDE = "home_latitude"
     private const val KEY_LONGITUDE = "home_longitude"
     private const val KEY_ADDRESS = "home_address"
+    private const val KEY_RADIUS = "safe_zone_radius"
+    private const val DEFAULT_RADIUS = 200f
 
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
@@ -32,6 +34,13 @@ object HomeStore {
             putString(KEY_ADDRESS, address)
             apply()
         }
+    }
+
+    /**
+     * Saves the safe zone radius.
+     */
+    fun saveRadius(context: Context, radius: Float) {
+        getPrefs(context).edit().putFloat(KEY_RADIUS, radius).apply()
     }
 
     /**
@@ -51,6 +60,13 @@ object HomeStore {
             java.lang.Double.longBitsToDouble(lngBits),
             address
         )
+    }
+
+    /**
+     * Loads the saved safe zone radius, returning default if not set.
+     */
+    fun loadRadius(context: Context): Float {
+        return getPrefs(context).getFloat(KEY_RADIUS, DEFAULT_RADIUS)
     }
 
     /**

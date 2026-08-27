@@ -5,4 +5,8 @@
         android:id="@+id/action_compass"
         android:title="@string/menu_compass"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/action_safe_zone"
+        android:title="@string/menu_safe_zone"
+        app:showAsAction="never" />
 </menu>
