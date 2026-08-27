@@ -120,12 +120,12 @@ class CompassView @JvmOverloads constructor(
         drawStarRose(canvas, centerX, centerY, radius * 0.4f)
         drawTicksAndDegrees(canvas, centerX, centerY, radius)
         drawCardinalLetters(canvas, centerX, centerY, radius)
+        drawNeedles(canvas, centerX, centerY, radius)
 
         canvas.restore()
 
         // 3. Draw fixed elements
         drawHeadingMarker(canvas, centerX, centerY, radius)
-        drawNeedles(canvas, centerX, centerY, radius)
         drawHomeIndicator(canvas, centerX, centerY, radius)
     }
 
