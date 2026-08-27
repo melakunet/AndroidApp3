@@ -20,4 +20,23 @@
     <string name="toast_home_saved">Home location saved</string>
     <string name="distance_meters">%d m</string>
     <string name="distance_km">%.1f km</string>
+    <string name="menu_compass">Compass</string>
+    <string name="title_compass">Compass</string>
+    <string name="bearing_format">%d°</string>
+    <string name="home_bearing_format">%d° · %s</string>
+    <string name="label_heading">Heading</string>
+    <string name="label_home">Home</string>
+    <string name="home_hint_turn">Turn until the green arrow points up</string>
+    <string name="home_hint_arrived">You have arrived home</string>
+    <string name="error_location_permission_needed">Location permission needed</string>
+    <string name="dir_n">North</string>
+    <string name="dir_ne">Northeast</string>
+    <string name="dir_e">East</string>
+    <string name="dir_se">Southeast</string>
+    <string name="dir_s">South</string>
+    <string name="dir_sw">Southwest</string>
+    <string name="dir_w">West</string>
+    <string name="dir_nw">Northwest</string>
+    <string name="label_mini_compass">Compass</string>
+    <string name="hint_open_compass">Tap to open the full compass</string>
 </resources>

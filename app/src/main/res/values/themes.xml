@@ -1,9 +1,65 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.AndroidApp3" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+    <style name="Theme.AndroidApp3" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Palette mapping -->
+        <item name="colorPrimary">@color/teal_primary</item>
+        <item name="colorOnPrimary">@color/deep_navy_bg</item>
+        <item name="colorSecondary">@color/violet_secondary</item>
+        <item name="colorOnSecondary">@color/sky_white_on</item>
+        <item name="colorTertiary">@color/amber_tertiary</item>
+        <item name="colorOnTertiary">@color/deep_navy_bg</item>
+        <item name="colorSurface">@color/navy_surface</item>
+        <item name="colorOnSurface">@color/sky_white_on</item>
+        <item name="colorSurfaceVariant">@color/navy_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/sky_white_on</item>
+        <item name="android:colorBackground">@color/deep_navy_bg</item>
+        <item name="colorOutline">@color/navy_outline</item>
+        <item name="colorError">@color/sunset_error</item>
+
+        <item name="android:statusBarColor">@color/deep_navy_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 
-    <style name="Theme.AndroidApp3" parent="Base.Theme.AndroidApp3" />
+    <!-- Typography Styles -->
+    <style name="TextAppearance.Guardian.Title" parent="TextAppearance.Material3.HeadlineLarge">
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:textSize">28sp</item>
+        <item name="android:letterSpacing">0.02</item>
+        <item name="android:textColor">@color/sky_white_on</item>
+    </style>
+
+    <style name="TextAppearance.Guardian.Label" parent="TextAppearance.Material3.LabelMedium">
+        <item name="android:fontFamily">sans-serif-condensed</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:letterSpacing">0.1</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/violet_secondary</item>
+    </style>
+
+    <style name="TextAppearance.Guardian.Value" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textColor">@color/sky_white_on</item>
+    </style>
+
+    <style name="TextAppearance.Guardian.Big" parent="TextAppearance.Material3.DisplayLarge">
+        <item name="android:fontFamily">sans-serif-black</item>
+        <item name="android:textSize">56sp</item>
+        <item name="android:textColor">@color/sky_white_on</item>
+    </style>
+
+    <!-- Button Styles -->
+    <style name="Widget.Guardian.Button" parent="Widget.Material3.Button">
+        <item name="shapeAppearance">@style/ShapeAppearance.Guardian.Button</item>
+    </style>
+
+    <style name="Widget.Guardian.Button.Outlined" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="shapeAppearance">@style/ShapeAppearance.Guardian.Button</item>
+        <item name="strokeColor">@color/violet_secondary</item>
+        <item name="android:textColor">@color/violet_secondary</item>
+    </style>
+
+    <style name="ShapeAppearance.Guardian.Button" parent="ShapeAppearance.Material3.MediumComponent">
+        <item name="cornerSize">24dp</item>
+    </style>
 </resources>

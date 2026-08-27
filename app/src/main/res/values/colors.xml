@@ -1,5 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Night-sky adventure palette -->
+    <color name="deep_navy_bg">#0B1026</color>
+    <color name="navy_surface">#161B3A</color>
+    <color name="navy_surface_variant">#1F2650</color>
+    <color name="teal_primary">#5EE0D6</color>
+    <color name="violet_secondary">#9B7BFF</color>
+    <color name="amber_tertiary">#FFB347</color>
+    <color name="sky_white_on">#EEF1FF</color>
+    <color name="navy_outline">#3A4380</color>
+    <color name="sunset_error">#FF6B6B</color>
+
+    <!-- Legacy / Tooling compatibility -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 </resources>

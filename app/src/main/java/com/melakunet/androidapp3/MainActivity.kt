@@ -1,12 +1,15 @@
 package com.melakunet.androidapp3
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Address
 import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -22,14 +25,18 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import java.util.Locale
+import kotlin.math.roundToInt
 
 /**
  * Main activity for the Guardian app.
- * Handles location fetching, reverse geocoding, and home location persistence.
+ * Handles location fetching, reverse geocoding, and displays a mini compass.
  */
 class MainActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private lateinit var headingSensor: HeadingSensor
+    
+    private lateinit var miniCompass: CompassView
     private lateinit var latitudeText: TextView
     private lateinit var longitudeText: TextView
     private lateinit var accuracyText: TextView
@@ -38,10 +45,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationButton: Button
     private lateinit var setHomeButton: Button
 
-    // Holds the last successfully retrieved location
     private var lastLocation: Location? = null
+    private var currentAzimuth = 0f
 
-    // Permission request launcher for fine and coarse location
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -57,11 +63,11 @@ class MainActivity : AppCompatActivity() {
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
 
-        // Setup toolbar
         val toolbar = findViewById<Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        // Initialize UI components
+        // Initialize UI
+        miniCompass = findViewById(R.id.miniCompass)
         latitudeText = findViewById(R.id.latitudeText)
         longitudeText = findViewById(R.id.longitudeText)
         accuracyText = findViewById(R.id.accuracyText)
@@ -70,25 +76,29 @@ class MainActivity : AppCompatActivity() {
         locationButton = findViewById(R.id.locationButton)
         setHomeButton = findViewById(R.id.setHomeButton)
 
+        headingSensor = HeadingSensor(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         locationButton.setOnClickListener {
             checkPermissionsAndFetchLocation()
         }
 
-        // Action for setting current location as home
         setHomeButton.setOnClickListener {
             lastLocation?.let { loc ->
                 HomeStore.saveHome(this, loc.latitude, loc.longitude, addressText.text.toString())
                 Toast.makeText(this, getString(R.string.toast_home_saved), Toast.LENGTH_SHORT).show()
                 refreshHomeStatus()
+                updateMiniCompassHome()
             }
         }
 
-        // Initial refresh of home status UI
+        // Tap on compass card opens full compass screen
+        findViewById<android.view.View>(R.id.compassCard).setOnClickListener {
+            startActivity(Intent(this, CompassActivity::class.java))
+        }
+
         refreshHomeStatus()
 
-        // Apply window insets for edge-to-edge support
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -96,47 +106,64 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        headingSensor.start { azimuth ->
+            currentAzimuth = azimuth
+            miniCompass.setAzimuth(azimuth)
+            updateMiniCompassHome()
+        }
+        refreshHomeStatus()
+        updateMiniCompassHome()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        headingSensor.stop()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu): Boolean {
+        menuInflater.inflate(R.menu.main_menu, menu)
+        return true
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.action_compass -> {
+                startActivity(Intent(this, CompassActivity::class.java))
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
     private fun checkPermissionsAndFetchLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED
-        ) {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
             fetchLocation()
         } else {
-            requestPermissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.ACCESS_FINE_LOCATION,
-                    Manifest.permission.ACCESS_COARSE_LOCATION
-                )
-            )
+            requestPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
     }
 
     private fun fetchLocation() {
-        if (ActivityCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) return
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
 
         val cts = CancellationTokenSource()
-        fusedLocationClient.getCurrentLocation(
-            Priority.PRIORITY_HIGH_ACCURACY,
-            cts.token
-        ).addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                lastLocation = location
-                setHomeButton.isEnabled = true
-                updateLocationUI(location)
-                reverseGeocode(location)
-                refreshHomeStatus()
-            } else {
-                addressText.text = getString(R.string.error_location_null)
+        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.token)
+            .addOnSuccessListener { location: Location? ->
+                if (location != null) {
+                    lastLocation = location
+                    setHomeButton.isEnabled = true
+                    updateLocationUI(location)
+                    reverseGeocode(location)
+                    refreshHomeStatus()
+                    updateMiniCompassHome()
+                } else {
+                    addressText.text = getString(R.string.error_location_null)
+                }
+            }.addOnFailureListener { e ->
+                addressText.text = getString(R.string.error_location_failure, e.localizedMessage)
             }
-        }.addOnFailureListener { e ->
-            addressText.text = getString(R.string.error_location_failure, e.localizedMessage)
-        }
     }
 
     private fun updateLocationUI(location: Location) {
@@ -145,9 +172,6 @@ class MainActivity : AppCompatActivity() {
         accuracyText.text = getString(R.string.accuracy_format, location.accuracy.toString())
     }
 
-    /**
-     * Refreshes the home status UI, including distance calculation if home and current location exist.
-     */
     private fun refreshHomeStatus() {
         val home = HomeStore.loadHome(this)
         if (home == null) {
@@ -159,11 +183,8 @@ class MainActivity : AppCompatActivity() {
         status.append(getString(R.string.status_home_format, home.address))
 
         lastLocation?.let { currentLoc ->
-            val homeLoc = Location("").apply {
-                latitude = home.latitude
-                longitude = home.longitude
-            }
-            val distance = currentLoc.distanceTo(homeLoc)
+            val pos = GeoUtils.calculateRelativePosition(currentLoc, home)
+            val distance = pos.distance
             val distanceStr = if (distance > 1000) {
                 getString(R.string.distance_km, distance / 1000f)
             } else {
@@ -176,6 +197,21 @@ class MainActivity : AppCompatActivity() {
         homeStatusText.text = status.toString()
     }
 
+    /**
+     * Updates the home indicator on the mini compass.
+     */
+    private fun updateMiniCompassHome() {
+        val home = HomeStore.loadHome(this)
+        val current = lastLocation
+        if (home != null && current != null) {
+            val pos = GeoUtils.calculateRelativePosition(current, home)
+            val relativeAngle = (pos.bearing - currentAzimuth + 360) % 360
+            miniCompass.setHomeAngle(relativeAngle, pos.distance < 10.0)
+        } else {
+            miniCompass.setHomeAngle(null)
+        }
+    }
+
     private fun reverseGeocode(location: Location) {
         val geocoder = Geocoder(this, Locale.getDefault())
         if (!Geocoder.isPresent()) {
@@ -184,19 +220,14 @@ class MainActivity : AppCompatActivity() {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            geocoder.getFromLocation(
-                location.latitude,
-                location.longitude,
-                1,
-                object : Geocoder.GeocodeListener {
-                    override fun onGeocode(addresses: MutableList<Address>) {
-                        runOnUiThread { displayAddress(addresses) }
-                    }
-                    override fun onError(errorMessage: String?) {
-                        runOnUiThread { addressText.text = getString(R.string.error_geocoding_failed) }
-                    }
+            geocoder.getFromLocation(location.latitude, location.longitude, 1, object : Geocoder.GeocodeListener {
+                override fun onGeocode(addresses: MutableList<Address>) {
+                    runOnUiThread { displayAddress(addresses) }
                 }
-            )
+                override fun onError(errorMessage: String?) {
+                    runOnUiThread { addressText.text = getString(R.string.error_geocoding_failed) }
+                }
+            })
         } else {
             Thread {
                 try {
@@ -218,8 +249,8 @@ class MainActivity : AppCompatActivity() {
             val address = addresses[0]
             val addressLines = (0..address.maxAddressLineIndex).map { address.getAddressLine(it) }
             addressText.text = addressLines.joinToString("\n")
-            // Refresh home status in case address was updated for a newly saved home
             refreshHomeStatus()
+            updateMiniCompassHome()
         } else {
             addressText.text = getString(R.string.error_geocoding_failed)
         }

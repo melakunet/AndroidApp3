@@ -1,7 +1,22 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.AndroidApp3" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+    <style name="Theme.AndroidApp3" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Identical to light theme for "night-sky" dark-first look -->
+        <item name="colorPrimary">@color/teal_primary</item>
+        <item name="colorOnPrimary">@color/deep_navy_bg</item>
+        <item name="colorSecondary">@color/violet_secondary</item>
+        <item name="colorOnSecondary">@color/sky_white_on</item>
+        <item name="colorTertiary">@color/amber_tertiary</item>
+        <item name="colorOnTertiary">@color/deep_navy_bg</item>
+        <item name="colorSurface">@color/navy_surface</item>
+        <item name="colorOnSurface">@color/sky_white_on</item>
+        <item name="colorSurfaceVariant">@color/navy_surface_variant</item>
+        <item name="colorOnSurfaceVariant">@color/sky_white_on</item>
+        <item name="android:colorBackground">@color/deep_navy_bg</item>
+        <item name="colorOutline">@color/navy_outline</item>
+        <item name="colorError">@color/sunset_error</item>
+
+        <item name="android:statusBarColor">@color/deep_navy_bg</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
