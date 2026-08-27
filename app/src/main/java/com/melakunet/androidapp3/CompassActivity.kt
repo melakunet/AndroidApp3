@@ -17,10 +17,7 @@ import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import kotlin.math.roundToInt
 
-/**
- * Activity that displays a modern compass and bearing information.
- * Uses ValueAnimator for smooth needle movement and shows distance/bearing to home.
- */
+// Compass screen: shows bearing and distance to home
 class CompassActivity : AppCompatActivity() {
 
     private lateinit var headingSensor: HeadingSensor
@@ -82,9 +79,7 @@ class CompassActivity : AppCompatActivity() {
         azimuthAnimator?.cancel()
     }
 
-    /**
-     * Animates the azimuth transition using the shortest path.
-     */
+    // Smoothly rotate the compass needle
     private fun animateAzimuth(target: Float) {
         if (azimuthAnimator?.isRunning == true) {
             targetAzimuth = target
@@ -95,7 +90,7 @@ class CompassActivity : AppCompatActivity() {
         val start = currentAzimuth
         var end = target
 
-        // Find shortest path
+        // Find shortest path to rotate
         val diff = end - start
         if (diff > 180) end -= 360 else if (diff < -180) end += 360
 

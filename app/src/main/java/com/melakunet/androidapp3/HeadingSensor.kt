@@ -6,10 +6,7 @@ import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 
-/**
- * Manages accelerometer and magnetometer sensors to provide device azimuth (heading).
- * Applies a low-pass filter for smooth data and normalizes results to 0..359 degrees.
- */
+// Uses sensors to find the phone's heading
 class HeadingSensor(context: Context) : SensorEventListener {
 
     private val sensorManager = context.getSystemService(Context.SENSOR_SERVICE) as SensorManager
@@ -21,19 +18,14 @@ class HeadingSensor(context: Context) : SensorEventListener {
     private var geomagnetic = FloatArray(3)
     private val alpha = 0.1f // Filter coefficient
 
-    /**
-     * Starts listening for sensor updates.
-     * @param listener Callback providing the azimuth in degrees (0-359).
-     */
+    // Start getting heading updates
     fun start(listener: (Float) -> Unit) {
         this.listener = listener
         accelerometer?.also { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
         magnetometer?.also { sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI) }
     }
 
-    /**
-     * Stops listening for sensor updates and clears references.
-     */
+    // Stop sensor updates
     fun stop() {
         sensorManager.unregisterListener(this)
         listener = null
@@ -52,9 +44,8 @@ class HeadingSensor(context: Context) : SensorEventListener {
             val orientation = FloatArray(3)
             SensorManager.getOrientation(r, orientation)
             
-            // Azimuth in orientation[0] is in radians [-PI, PI]
+            // Result is in radians, convert to 0-359 degrees
             var azimuthDeg = Math.toDegrees(orientation[0].toDouble()).toFloat()
-            // Normalize to [0, 360)
             azimuthDeg = (azimuthDeg + 360) % 360
             
             listener?.invoke(azimuthDeg)

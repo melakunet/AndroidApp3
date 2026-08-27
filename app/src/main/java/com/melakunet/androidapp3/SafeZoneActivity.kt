@@ -24,10 +24,7 @@ import com.google.android.material.slider.Slider
 import java.text.SimpleDateFormat
 import java.util.*
 
-/**
- * Activity that monitors if the user is within a defined "Safe Zone" around home.
- * Provides real-time updates and notifications/vibrations when leaving the zone.
- */
+// Monitor if the phone stays inside the safe zone
 class SafeZoneActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -50,7 +47,7 @@ class SafeZoneActivity : AppCompatActivity() {
     private var wasInside = true
     private val channelId = "guardian_alerts"
 
-    // Permission launcher for location and notifications
+    // Handle location and notification permissions
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -104,7 +101,9 @@ class SafeZoneActivity : AppCompatActivity() {
 
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
-                locationResult.lastLocation?.let { updateUI(it) }
+                for (location in locationResult.locations) {
+                    updateUI(location)
+                }
             }
         }
 
@@ -160,19 +159,26 @@ class SafeZoneActivity : AppCompatActivity() {
         latitudeText.text = String.format(Locale.US, "%.6f", location.latitude)
         longitudeText.text = String.format(Locale.US, "%.6f", location.longitude)
         accuracyText.text = getString(R.string.accuracy_format, location.accuracy.toInt().toString())
-        speedText.text = getString(R.string.speed_format, location.speed * 3.6f)
+        
+        // Speed comes in m/s, convert to km/h
+        val speedKmH = if (location.hasSpeed()) location.speed * 3.6f else 0f
+        speedText.text = getString(R.string.speed_format, speedKmH)
+        
         lastUpdateText.text = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
 
         val home = homeLocation ?: run {
             statusText.text = getString(R.string.status_no_home)
+            distanceText.text = ""
             return
         }
 
         val pos = GeoUtils.calculateRelativePosition(location, home)
-        distanceText.text = getString(R.string.status_distance_format, 
-            if (pos.distance > 1000) getString(R.string.distance_km, pos.distance / 1000f)
-            else getString(R.string.distance_meters, pos.distance.toInt())
-        )
+        val distanceStr = if (pos.distance > 1000) {
+            getString(R.string.distance_km, pos.distance / 1000f)
+        } else {
+            getString(R.string.distance_meters, pos.distance.toInt())
+        }
+        distanceText.text = getString(R.string.status_distance_format, distanceStr)
 
         val isInside = pos.distance <= currentRadius
         if (isInside) {

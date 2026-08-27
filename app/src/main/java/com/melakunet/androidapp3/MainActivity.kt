@@ -25,12 +25,8 @@ import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
 import com.google.android.gms.tasks.CancellationTokenSource
 import java.util.Locale
-import kotlin.math.roundToInt
 
-/**
- * Main activity for the Guardian app.
- * Handles location fetching, reverse geocoding, and displays a mini compass.
- */
+// Main screen: shows location and a mini compass.
 class MainActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
@@ -49,6 +45,7 @@ class MainActivity : AppCompatActivity() {
     private var lastLocation: Location? = null
     private var currentAzimuth = 0f
 
+    // Request permissions for location
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
@@ -105,6 +102,7 @@ class MainActivity : AppCompatActivity() {
 
         refreshHomeStatus()
 
+        // Handle edge-to-edge window padding
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
@@ -114,6 +112,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Start compass updates
         headingSensor.start { azimuth ->
             currentAzimuth = azimuth
             miniCompass.setAzimuth(azimuth)
@@ -125,6 +124,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         super.onPause()
+        // Stop compass to save battery
         headingSensor.stop()
     }
 
@@ -155,6 +155,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Get current location once
     private fun fetchLocation() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
 
@@ -179,9 +180,10 @@ class MainActivity : AppCompatActivity() {
     private fun updateLocationUI(location: Location) {
         latitudeText.text = String.format(Locale.US, "%.6f", location.latitude)
         longitudeText.text = String.format(Locale.US, "%.6f", location.longitude)
-        accuracyText.text = getString(R.string.accuracy_format, location.accuracy.toString())
+        accuracyText.text = getString(R.string.accuracy_format, location.accuracy.toInt().toString())
     }
 
+    // Update distance to home text
     private fun refreshHomeStatus() {
         val home = HomeStore.loadHome(this)
         if (home == null) {
@@ -207,9 +209,7 @@ class MainActivity : AppCompatActivity() {
         homeStatusText.text = status.toString()
     }
 
-    /**
-     * Updates the home indicator on the mini compass.
-     */
+    // Update the green arrow on mini compass
     private fun updateMiniCompassHome() {
         val home = HomeStore.loadHome(this)
         val current = lastLocation
@@ -222,6 +222,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Find address from coordinates
     private fun reverseGeocode(location: Location) {
         val geocoder = Geocoder(this, Locale.getDefault())
         if (!Geocoder.isPresent()) {

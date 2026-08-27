@@ -9,9 +9,7 @@ import kotlin.math.cos
 import kotlin.math.min
 import kotlin.math.sin
 
-/**
- * Modern CompassView with theme-aware colors, detailed dial, and home direction indicator.
- */
+// Compass dial that rotates to show real north and points to home.
 class CompassView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
@@ -81,17 +79,13 @@ class CompassView @JvmOverloads constructor(
 
     private val path = Path()
 
-    /**
-     * Updates the device azimuth and redraws the view.
-     */
+    // Set rotation and redraw.
     fun setAzimuth(degrees: Float) {
         azimuth = degrees
         invalidate()
     }
 
-    /**
-     * Updates the home angle relative to device top and "at home" status.
-     */
+    // Set the angle to home and if we are already there.
     fun setHomeAngle(degrees: Float?, atHome: Boolean = false) {
         homeAngle = degrees
         isAtHome = atHome
@@ -211,11 +205,7 @@ class CompassView @JvmOverloads constructor(
         val needleLen = r * 0.7f
         val needleWidth = 20f
 
-        // North (Fixed to dial north which is now at (cx, cy-needleLen) relative to rotated canvas, 
-        // but wait, task says "Fixed elements (do not rotate with the dial)". 
-        // A real compass needle points to real north. 
-        // Since the dial rotates by -azimuth, real north is ALWAYS at the top of the dial on screen.
-        // So the needle should indeed be drawn fixed pointing UP and DOWN.
+        // Draw the north and south needle halves
         
         // North half
         path.reset()

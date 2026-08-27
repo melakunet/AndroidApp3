@@ -3,15 +3,10 @@ package com.melakunet.androidapp3
 import android.content.Context
 import android.content.SharedPreferences
 
-/**
- * Data class representing a saved home location.
- */
+// Data for a saved home
 data class HomeLocation(val latitude: Double, val longitude: Double, val address: String)
 
-/**
- * Persistence helper for storing and retrieving the home location using SharedPreferences.
- * Uses Double bit representation to maintain coordinate precision.
- */
+// Saves and loads home data from SharedPreferences
 object HomeStore {
     private const val PREF_NAME = "guardian_prefs"
     private const val KEY_LATITUDE = "home_latitude"
@@ -24,9 +19,7 @@ object HomeStore {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }
 
-    /**
-     * Saves the provided home location details to SharedPreferences.
-     */
+    // Save home coordinates and address
     fun saveHome(context: Context, latitude: Double, longitude: Double, address: String) {
         getPrefs(context).edit().apply {
             putLong(KEY_LATITUDE, java.lang.Double.doubleToRawLongBits(latitude))
@@ -36,17 +29,12 @@ object HomeStore {
         }
     }
 
-    /**
-     * Saves the safe zone radius.
-     */
+    // Save the safe zone distance
     fun saveRadius(context: Context, radius: Float) {
         getPrefs(context).edit().putFloat(KEY_RADIUS, radius).apply()
     }
 
-    /**
-     * Loads the saved home location from SharedPreferences.
-     * Returns null if no home location has been saved.
-     */
+    // Get the saved home location
     fun loadHome(context: Context): HomeLocation? {
         val prefs = getPrefs(context)
         if (!prefs.contains(KEY_LATITUDE)) return null
@@ -62,16 +50,12 @@ object HomeStore {
         )
     }
 
-    /**
-     * Loads the saved safe zone radius, returning default if not set.
-     */
+    // Get the safe zone distance
     fun loadRadius(context: Context): Float {
         return getPrefs(context).getFloat(KEY_RADIUS, DEFAULT_RADIUS)
     }
 
-    /**
-     * Clears any saved home location from SharedPreferences.
-     */
+    // Delete home data
     fun clearHome(context: Context) {
         getPrefs(context).edit().clear().apply()
     }

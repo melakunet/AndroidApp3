@@ -2,19 +2,13 @@ package com.melakunet.androidapp3
 
 import android.location.Location
 
-/**
- * Geographic calculation utilities for the Guardian app.
- */
+// Map and location calculations
 object GeoUtils {
 
-    /**
-     * Data class to return both bearing and distance from current location to a target.
-     */
+    // Result for bearing and distance
     data class RelativePosition(val bearing: Float, val distance: Float)
 
-    /**
-     * Calculates the bearing (0-359 degrees) and distance (meters) to a HomeLocation.
-     */
+    // Find bearing and distance to home
     fun calculateRelativePosition(current: Location, home: HomeLocation): RelativePosition {
         val homeLoc = Location("").apply {
             latitude = home.latitude
