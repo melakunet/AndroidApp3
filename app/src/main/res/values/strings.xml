@@ -53,4 +53,11 @@
     <string name="btn_stop_tracking">Stop Tracking</string>
     <string name="notif_left_safe_zone">Left the safe zone</string>
     <string name="notif_channel_name">Guardian Alerts</string>
+    <string name="title_map">Map</string>
+    <string name="btn_open_map">View Map</string>
+    <string name="map_coordinates_format">Lat %1$s · Lon %2$s</string>
+    <string name="map_waiting_for_location">Waiting for location…</string>
+    <string name="map_marker_current_location">You are here</string>
+    <string name="map_marker_home">Home</string>
+    <string name="toast_no_home_for_map">No home set yet, so the safe zone is not shown</string>
 </resources>

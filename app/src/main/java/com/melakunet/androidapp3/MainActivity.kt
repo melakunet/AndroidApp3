@@ -41,6 +41,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var locationButton: Button
     private lateinit var setHomeButton: Button
     private lateinit var openSafeZoneButton: Button
+    private lateinit var openMapButton: Button
 
     private var lastLocation: Location? = null
     private var currentAzimuth = 0f
@@ -74,6 +75,7 @@ class MainActivity : AppCompatActivity() {
         locationButton = findViewById(R.id.locationButton)
         setHomeButton = findViewById(R.id.setHomeButton)
         openSafeZoneButton = findViewById(R.id.openSafeZoneButton)
+        openMapButton = findViewById(R.id.openMapButton)
 
         headingSensor = HeadingSensor(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
@@ -93,6 +95,10 @@ class MainActivity : AppCompatActivity() {
 
         openSafeZoneButton.setOnClickListener {
             startActivity(Intent(this, SafeZoneActivity::class.java))
+        }
+
+        openMapButton.setOnClickListener {
+            startActivity(Intent(this, MapActivity::class.java))
         }
 
         // Tap on compass card opens full compass screen
