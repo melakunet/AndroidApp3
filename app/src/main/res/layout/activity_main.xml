@@ -197,6 +197,15 @@
                         android:layout_height="wrap_content"
                         android:text="@string/placeholder_value"
                         style="@style/TextAppearance.Guardian.Value" />
+
+                    <TextView
+                        android:id="@+id/lastUpdateText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/placeholder_value"
+                        style="@style/TextAppearance.MaterialComponents.Caption"
+                        android:textColor="?attr/colorSecondary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -206,7 +215,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="40dp"
                 android:layout_marginTop="24dp"
-                android:text="@string/btn_get_location"
+                android:text="@string/btn_start_live_updates"
                 style="@style/Widget.Guardian.Button"
                 android:textColor="?attr/colorOnPrimary"
                 app:layout_constraintEnd_toEndOf="parent"

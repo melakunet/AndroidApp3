@@ -6,7 +6,8 @@
     <string name="label_address">Address</string>
     <string name="label_accuracy">Accuracy</string>
     <string name="placeholder_value">--</string>
-    <string name="btn_get_location">Get My Location</string>
+    <string name="btn_start_live_updates">Start Live Updates</string>
+    <string name="btn_stop_live_updates">Stop Live Updates</string>
     <string name="error_location_denied">Location permission is required for this feature.</string>
     <string name="error_location_null">Could not retrieve location.</string>
     <string name="error_location_failure">Failed to get location: %s</string>
@@ -49,6 +50,7 @@
     <string name="label_speed">Speed</string>
     <string name="speed_format">%.1f km/h</string>
     <string name="label_last_update">Last Update</string>
+    <string name="status_updated_format">Updated %1$s</string>
     <string name="btn_start_tracking">Start Tracking</string>
     <string name="btn_stop_tracking">Stop Tracking</string>
     <string name="notif_left_safe_zone">Left the safe zone</string>

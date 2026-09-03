@@ -8,6 +8,7 @@ import android.location.Geocoder
 import android.location.Location
 import android.os.Build
 import android.os.Bundle
+import android.os.Looper
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
@@ -21,9 +22,13 @@ import androidx.core.app.ActivityCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationCallback
+import com.google.android.gms.location.LocationRequest
+import com.google.android.gms.location.LocationResult
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 // Main screen: shows location and a mini compass.
@@ -31,12 +36,14 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var headingSensor: HeadingSensor
+    private lateinit var locationCallback: LocationCallback
     
     private lateinit var miniCompass: CompassView
     private lateinit var latitudeText: TextView
     private lateinit var longitudeText: TextView
     private lateinit var accuracyText: TextView
     private lateinit var addressText: TextView
+    private lateinit var lastUpdateText: TextView
     private lateinit var homeStatusText: TextView
     private lateinit var locationButton: Button
     private lateinit var setHomeButton: Button
@@ -44,14 +51,18 @@ class MainActivity : AppCompatActivity() {
     private lateinit var openMapButton: Button
 
     private var lastLocation: Location? = null
+    private var lastGeocodedLocation: Location? = null
+    private var hasFetchedAddress = false
     private var currentAzimuth = 0f
+    private var isLiveUpdating = false
+    private var shouldResumeLiveUpdates = false
 
     // Request permissions for location
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
     ) { permissions ->
         if (permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true) {
-            fetchLocation()
+            startLiveUpdates()
         } else {
             Toast.makeText(this, getString(R.string.error_location_denied), Toast.LENGTH_SHORT).show()
         }
@@ -71,6 +82,7 @@ class MainActivity : AppCompatActivity() {
         longitudeText = findViewById(R.id.longitudeText)
         accuracyText = findViewById(R.id.accuracyText)
         addressText = findViewById(R.id.addressText)
+        lastUpdateText = findViewById(R.id.lastUpdateText)
         homeStatusText = findViewById(R.id.homeStatusText)
         locationButton = findViewById(R.id.locationButton)
         setHomeButton = findViewById(R.id.setHomeButton)
@@ -79,9 +91,16 @@ class MainActivity : AppCompatActivity() {
 
         headingSensor = HeadingSensor(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        locationCallback = object : LocationCallback() {
+            override fun onLocationResult(locationResult: LocationResult) {
+                for (location in locationResult.locations) {
+                    handleLocationUpdate(location)
+                }
+            }
+        }
 
         locationButton.setOnClickListener {
-            checkPermissionsAndFetchLocation()
+            if (isLiveUpdating) stopLiveUpdates() else checkPermissionsAndStartLiveUpdates()
         }
 
         setHomeButton.setOnClickListener {
@@ -124,6 +143,10 @@ class MainActivity : AppCompatActivity() {
             miniCompass.setAzimuth(azimuth)
             updateMiniCompassHome()
         }
+        if (shouldResumeLiveUpdates) {
+            shouldResumeLiveUpdates = false
+            checkPermissionsAndStartLiveUpdates()
+        }
         refreshHomeStatus()
         updateMiniCompassHome()
     }
@@ -132,6 +155,8 @@ class MainActivity : AppCompatActivity() {
         super.onPause()
         // Stop compass to save battery
         headingSensor.stop()
+        shouldResumeLiveUpdates = isLiveUpdating
+        stopLiveUpdates()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -153,36 +178,69 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private fun checkPermissionsAndFetchLocation() {
+    // Start live updates when permission is available.
+    private fun checkPermissionsAndStartLiveUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fetchLocation()
+            startLiveUpdates()
         } else {
             requestPermissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION))
         }
     }
 
-    // Get current location once
-    private fun fetchLocation() {
+    // Start continuous location updates.
+    private fun startLiveUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
 
-        val cts = CancellationTokenSource()
-        fusedLocationClient.getCurrentLocation(Priority.PRIORITY_HIGH_ACCURACY, cts.token)
-            .addOnSuccessListener { location: Location? ->
-                if (location != null) {
-                    lastLocation = location
-                    setHomeButton.isEnabled = true
-                    updateLocationUI(location)
-                    reverseGeocode(location)
-                    refreshHomeStatus()
-                    updateMiniCompassHome()
-                } else {
-                    addressText.text = getString(R.string.error_location_null)
-                }
-            }.addOnFailureListener { e ->
-                addressText.text = getString(R.string.error_location_failure, e.localizedMessage)
-            }
+        val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 3000L)
+            .setMinUpdateIntervalMillis(1000L)
+            .build()
+
+        fusedLocationClient.requestLocationUpdates(request, locationCallback, Looper.getMainLooper())
+        isLiveUpdating = true
+        updateLocationButton()
     }
 
+    // Stop continuous location updates.
+    private fun stopLiveUpdates() {
+        fusedLocationClient.removeLocationUpdates(locationCallback)
+        isLiveUpdating = false
+        updateLocationButton()
+    }
+
+    // Refresh UI from a new location fix.
+    private fun handleLocationUpdate(location: Location) {
+        lastLocation = location
+        setHomeButton.isEnabled = true
+        updateLocationUI(location)
+        updateLastUpdatedText()
+        refreshHomeStatus()
+        updateMiniCompassHome()
+
+        if (shouldReverseGeocode(location)) {
+            reverseGeocode(location)
+        }
+    }
+
+    // Update the location button label for the current tracking state.
+    private fun updateLocationButton() {
+        locationButton.text = getString(
+            if (isLiveUpdating) R.string.btn_stop_live_updates else R.string.btn_start_live_updates
+        )
+    }
+
+    // Update the visible timestamp for the latest fix.
+    private fun updateLastUpdatedText() {
+        val timestamp = SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(Date())
+        lastUpdateText.text = getString(R.string.status_updated_format, timestamp)
+    }
+
+    // Decide whether the next fix should trigger reverse geocoding.
+    private fun shouldReverseGeocode(location: Location): Boolean {
+        val previous = lastGeocodedLocation
+        return !hasFetchedAddress || previous == null || previous.distanceTo(location) > 30f
+    }
+
+    // Update the core location fields.
     private fun updateLocationUI(location: Location) {
         latitudeText.text = String.format(Locale.US, "%.6f", location.latitude)
         longitudeText.text = String.format(Locale.US, "%.6f", location.longitude)
@@ -232,6 +290,7 @@ class MainActivity : AppCompatActivity() {
     private fun reverseGeocode(location: Location) {
         val geocoder = Geocoder(this, Locale.getDefault())
         if (!Geocoder.isPresent()) {
+            hasFetchedAddress = false
             addressText.text = getString(R.string.error_geocoder_not_present)
             return
         }
@@ -239,10 +298,13 @@ class MainActivity : AppCompatActivity() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             geocoder.getFromLocation(location.latitude, location.longitude, 1, object : Geocoder.GeocodeListener {
                 override fun onGeocode(addresses: MutableList<Address>) {
-                    runOnUiThread { displayAddress(addresses) }
+                    runOnUiThread { displayAddress(location, addresses) }
                 }
                 override fun onError(errorMessage: String?) {
-                    runOnUiThread { addressText.text = getString(R.string.error_geocoding_failed) }
+                    runOnUiThread {
+                        hasFetchedAddress = false
+                        addressText.text = getString(R.string.error_geocoding_failed)
+                    }
                 }
             })
         } else {
@@ -251,24 +313,34 @@ class MainActivity : AppCompatActivity() {
                     @Suppress("DEPRECATION")
                     val addresses = geocoder.getFromLocation(location.latitude, location.longitude, 1)
                     runOnUiThread {
-                        if (addresses != null) displayAddress(addresses)
-                        else addressText.text = getString(R.string.error_geocoding_failed)
+                        if (addresses != null) displayAddress(location, addresses)
+                        else {
+                            hasFetchedAddress = false
+                            addressText.text = getString(R.string.error_geocoding_failed)
+                        }
                     }
                 } catch (e: Exception) {
-                    runOnUiThread { addressText.text = getString(R.string.error_geocoding_failed) }
+                    runOnUiThread {
+                        hasFetchedAddress = false
+                        addressText.text = getString(R.string.error_geocoding_failed)
+                    }
                 }
             }.start()
         }
     }
 
-    private fun displayAddress(addresses: List<Address>) {
+    // Show the resolved address text.
+    private fun displayAddress(location: Location, addresses: List<Address>) {
         if (addresses.isNotEmpty()) {
             val address = addresses[0]
             val addressLines = (0..address.maxAddressLineIndex).map { address.getAddressLine(it) }
             addressText.text = addressLines.joinToString("\n")
+            lastGeocodedLocation = Location(location)
+            hasFetchedAddress = true
             refreshHomeStatus()
             updateMiniCompassHome()
         } else {
+            hasFetchedAddress = false
             addressText.text = getString(R.string.error_geocoding_failed)
         }
     }
