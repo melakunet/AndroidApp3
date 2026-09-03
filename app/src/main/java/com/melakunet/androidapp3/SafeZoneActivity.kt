@@ -59,6 +59,7 @@ class SafeZoneActivity : AppCompatActivity() {
         }
     }
 
+    // Set up the safe-zone screen and its controls.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -114,16 +115,19 @@ class SafeZoneActivity : AppCompatActivity() {
         }
     }
 
+    // Toolbar back arrow returns to the previous screen.
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
     }
 
+    // Stop tracking while the screen is not visible.
     override fun onPause() {
         super.onPause()
         if (isTracking) stopTracking()
     }
 
+    // Request the permissions needed before tracking can start.
     private fun checkPermissionsAndStartTracking() {
         val permissions = mutableListOf(Manifest.permission.ACCESS_FINE_LOCATION)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -137,6 +141,7 @@ class SafeZoneActivity : AppCompatActivity() {
         }
     }
 
+    // Start continuous location tracking for the safe zone.
     private fun startLocationUpdates() {
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) return
 
@@ -149,12 +154,14 @@ class SafeZoneActivity : AppCompatActivity() {
         trackingButton.text = getString(R.string.btn_stop_tracking)
     }
 
+    // Stop safe-zone tracking and restore the start button text.
     private fun stopTracking() {
         fusedLocationClient.removeLocationUpdates(locationCallback)
         isTracking = false
         trackingButton.text = getString(R.string.btn_start_tracking)
     }
 
+    // Refresh the safe-zone status from the latest location fix.
     private fun updateUI(location: Location) {
         latitudeText.text = String.format(Locale.US, "%.6f", location.latitude)
         longitudeText.text = String.format(Locale.US, "%.6f", location.longitude)
@@ -195,6 +202,7 @@ class SafeZoneActivity : AppCompatActivity() {
         wasInside = isInside
     }
 
+    // Notify when the phone leaves the safe zone.
     private fun sendAlert() {
         // Notification
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED ||
@@ -220,6 +228,7 @@ class SafeZoneActivity : AppCompatActivity() {
         }
     }
 
+    // Create the alerts channel for safe-zone notifications.
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val name = getString(R.string.notif_channel_name)

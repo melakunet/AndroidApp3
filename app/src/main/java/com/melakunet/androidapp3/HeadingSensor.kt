@@ -31,6 +31,7 @@ class HeadingSensor(context: Context) : SensorEventListener {
         listener = null
     }
 
+    // Combine sensor readings into a heading in degrees.
     override fun onSensorChanged(event: SensorEvent) {
         if (event.sensor.type == Sensor.TYPE_ACCELEROMETER) {
             for (i in 0..2) gravity[i] = alpha * event.values[i] + (1 - alpha) * gravity[i]
@@ -52,5 +53,6 @@ class HeadingSensor(context: Context) : SensorEventListener {
         }
     }
 
+    // Ignore accuracy changes because the live heading updates already smooth the result.
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {}
 }

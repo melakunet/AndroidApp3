@@ -92,12 +92,14 @@ class CompassView @JvmOverloads constructor(
         invalidate()
     }
 
+    // Keep the compass square no matter how it is sized.
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         val size = min(getDefaultSize(suggestedMinimumWidth, widthMeasureSpec),
                        getDefaultSize(suggestedMinimumHeight, heightMeasureSpec))
         setMeasuredDimension(size, size)
     }
 
+    // Draw the dial, needles and home indicator.
     override fun onDraw(canvas: Canvas) {
         val centerX = width / 2f
         val centerY = height / 2f
@@ -123,6 +125,7 @@ class CompassView @JvmOverloads constructor(
         drawHomeIndicator(canvas, centerX, centerY, radius)
     }
 
+    // Draw the star shape behind the main compass needle.
     private fun drawStarRose(canvas: Canvas, cx: Float, cy: Float, r: Float) {
         path.reset()
         for (i in 0 until 4) {
@@ -148,6 +151,7 @@ class CompassView @JvmOverloads constructor(
         starPaint.alpha = 60
     }
 
+    // Draw the ring ticks and degree numbers around the dial.
     private fun drawTicksAndDegrees(canvas: Canvas, cx: Float, cy: Float, r: Float) {
         for (i in 0 until 360 step 5) {
             val angleRad = Math.toRadians(i.toDouble() - 90)
@@ -175,6 +179,7 @@ class CompassView @JvmOverloads constructor(
         }
     }
 
+    // Draw the N, E, S and W labels around the dial.
     private fun drawCardinalLetters(canvas: Canvas, cx: Float, cy: Float, r: Float) {
         val cardinals = mapOf(
             0 to "N", 90 to "E", 180 to "S", 270 to "W",
@@ -192,6 +197,7 @@ class CompassView @JvmOverloads constructor(
         }
     }
 
+    // Draw the fixed top marker the rotating dial moves under.
     private fun drawHeadingMarker(canvas: Canvas, cx: Float, cy: Float, r: Float) {
         path.reset()
         path.moveTo(cx, cy - r - 10)
@@ -201,6 +207,7 @@ class CompassView @JvmOverloads constructor(
         canvas.drawPath(path, markerPaint)
     }
 
+    // Draw the red north needle and gray south needle.
     private fun drawNeedles(canvas: Canvas, cx: Float, cy: Float, r: Float) {
         val needleLen = r * 0.7f
         val needleWidth = 20f
@@ -230,6 +237,7 @@ class CompassView @JvmOverloads constructor(
         canvas.drawCircle(cx, cy, 8f, needlePaint)
     }
 
+    // Draw the green home arrow or arrival ring.
     private fun drawHomeIndicator(canvas: Canvas, cx: Float, cy: Float, r: Float) {
         if (homeAngle == null) return
 

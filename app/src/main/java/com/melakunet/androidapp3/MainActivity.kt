@@ -68,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Set up the home screen and hook up its buttons and sensors.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -91,6 +92,7 @@ class MainActivity : AppCompatActivity() {
 
         headingSensor = HeadingSensor(this)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+        // Reuse one callback so start and stop hit the same listener.
         locationCallback = object : LocationCallback() {
             override fun onLocationResult(locationResult: LocationResult) {
                 for (location in locationResult.locations) {
@@ -135,6 +137,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // Restart sensors and resume location updates after returning.
     override fun onResume() {
         super.onResume()
         // Start compass updates
@@ -143,6 +146,7 @@ class MainActivity : AppCompatActivity() {
             miniCompass.setAzimuth(azimuth)
             updateMiniCompassHome()
         }
+        // Resume only if the user had live updates on before pause.
         if (shouldResumeLiveUpdates) {
             shouldResumeLiveUpdates = false
             checkPermissionsAndStartLiveUpdates()
@@ -151,19 +155,23 @@ class MainActivity : AppCompatActivity() {
         updateMiniCompassHome()
     }
 
+    // Pause sensors and location updates while the screen is not visible.
     override fun onPause() {
         super.onPause()
         // Stop compass to save battery
         headingSensor.stop()
+        // Remember the toggle state so onResume can restore it.
         shouldResumeLiveUpdates = isLiveUpdating
         stopLiveUpdates()
     }
 
+    // Inflate the top app bar menu.
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
         return true
     }
 
+    // Open the selected screen from the top app bar menu.
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId) {
             R.id.action_compass -> {
@@ -216,6 +224,7 @@ class MainActivity : AppCompatActivity() {
         refreshHomeStatus()
         updateMiniCompassHome()
 
+        // Only geocode when the phone has moved enough to need a fresh address.
         if (shouldReverseGeocode(location)) {
             reverseGeocode(location)
         }

@@ -34,6 +34,7 @@ class CompassActivity : AppCompatActivity() {
     private var homeLocation: HomeLocation? = null
     private var lastLocation: Location? = null
 
+    // Set up the full compass screen.
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -58,11 +59,13 @@ class CompassActivity : AppCompatActivity() {
         }
     }
 
+    // Toolbar back arrow returns to the previous screen.
     override fun onSupportNavigateUp(): Boolean {
         onBackPressedDispatcher.onBackPressed()
         return true
     }
 
+    // Restart heading updates and refresh the current location.
     override fun onResume() {
         super.onResume()
         headingSensor.start { azimuth ->
@@ -73,6 +76,7 @@ class CompassActivity : AppCompatActivity() {
         requestCurrentLocation()
     }
 
+    // Stop heading updates and any running rotation animation.
     override fun onPause() {
         super.onPause()
         headingSensor.stop()
@@ -108,12 +112,14 @@ class CompassActivity : AppCompatActivity() {
         }
     }
 
+    // Show the current heading as degrees and a compass word.
     private fun updateCompassUI(azimuth: Float) {
         val rounded = azimuth.roundToInt() % 360
         bearingText.text = getString(R.string.bearing_format, rounded)
         directionText.text = getDirectionName(rounded)
     }
 
+    // Convert a bearing into a compass direction name.
     private fun getDirectionName(degrees: Int): String {
         return when (((degrees + 22.5) % 360 / 45).toInt()) {
             0 -> getString(R.string.dir_n)
@@ -128,6 +134,7 @@ class CompassActivity : AppCompatActivity() {
         }
     }
 
+    // Get one fix so the compass can point toward home.
     private fun requestCurrentLocation() {
         if (ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             homeBearingText.text = getString(R.string.error_location_permission_needed)
@@ -143,6 +150,7 @@ class CompassActivity : AppCompatActivity() {
             }
     }
 
+    // Update the home bearing, distance and arrow state.
     private fun updateHomeBearingUI() {
         val home = homeLocation ?: run {
             homeBearingText.text = getString(R.string.status_no_home)

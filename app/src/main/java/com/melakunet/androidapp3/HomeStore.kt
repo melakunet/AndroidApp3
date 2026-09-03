@@ -15,6 +15,7 @@ object HomeStore {
     private const val KEY_RADIUS = "safe_zone_radius"
     private const val DEFAULT_RADIUS = 200f
 
+    // Open the app preferences used for home data.
     private fun getPrefs(context: Context): SharedPreferences {
         return context.getSharedPreferences(PREF_NAME, Context.MODE_PRIVATE)
     }

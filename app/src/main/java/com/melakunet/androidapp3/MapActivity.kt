@@ -270,6 +270,7 @@ class MapActivity : AppCompatActivity() {
         mapCoordinatesText.text = getString(R.string.map_coordinates_format, latitude, longitude)
     }
 
+    // Shared constants for map setup and safe-zone styling.
     companion object {
         private const val OSMDROID_PREF_NAME = "osmdroid_prefs"
         private const val DEFAULT_ZOOM = 16.0
